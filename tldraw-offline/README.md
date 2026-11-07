@@ -14,16 +14,16 @@ This unified downstream patch delivers custom typography and FigJam-style sticky
   - Overrides `DefaultFontFamilies.mono` to use `'IBM Plex Mono', 'tldraw_mono', monospace`.
   - Seamlessly renders local system fonts installed in `~/.local/share/fonts/` without breaking fallback web fonts.
 
-### 2. FigJam-Style Free Sticky Note Resizing (Behavior A)
+### 2. FigJam-Style Free Resizing for Sticky Notes (Behavior A)
 * **Upstream Problem:** In stock tldraw, sticky notes (`NoteShapeUtil`) have fixed square dimensions (`200x200`) and lock aspect ratio (`isAspectRatioLocked = true`), preventing resizing into rectangles or cards.
 * **Downstream Solution:**
-  - Adds `growX: validation_exports.positiveNumber.optional()` to `noteShapeProps` in `chunk-WESP7CPQ.js`.
+  - Uses `shape.meta.growX` (tldraw's built-in `meta: jsonDict`), which completely avoids modifying the schema and guarantees the backend sync room never throws `INVALID_RECORD`.
   - Sets `isAspectRatioLocked` and `hideResizeHandles` to `false` in `NoteShapeUtil` (`chunk-3W5KUHKC.js`).
   - Implements multi-directional resizing in `NoteShapeUtil.onResize`:
-    - **Side handles (left/right)**: Expand or contract width independently.
-    - **Side handles (top/bottom)**: Expand or contract height independently.
-    - **Corner handles**: Resize both width and height freely into cards/rectangles.
-    - **Holding Shift**: Constrains proportions to square aspect ratio.
+    - **Side handles (left/right)**: Expand or contract width independently via `shape.meta.growX`.
+    - **Side handles (top/bottom)**: Expand or contract height independently via `props.growY`.
+    - **Corner handles**: Resize both width and height freely into wide rectangles or cards.
+    - **Holding Shift**: Constrains proportions to 1:1 square aspect ratio.
   - Dynamically updates text wrap bounds (`measureNoteLabelSize`), selection indicator box (`getIndicatorPath`), and SVG export canvas (`toSvg`) to preserve custom dimensions.
 
 ---

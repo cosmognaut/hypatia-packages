@@ -29,7 +29,7 @@ source_x86_64=(
 source_aarch64=("${pkgname}-${pkgver}-aarch64.AppImage::https://github.com/tldraw/tldraw-offline/releases/download/v${pkgver}/tldraw-offline-linux-arm64.AppImage")
 sha256sums_x86_64=(
     '0b2dc8b3349119b7af8e9f939810b6ef617aeb1e9760c50be00ed55efb30fe23'
-    '3e4063e66d9292b6990d76943db2b183022a3fd10929c08b77c601dab89864ff'
+    '2e3a55b907a6c2d87e07c95865e05e2881d23dc5ec888a79ca653a6de8cd1570'
 )
 sha256sums_aarch64=('6ef8b8639a722b0e5ab70f8f0799a614f6ef52c71e53483519f79adf6b6f4218')
 noextract=(
