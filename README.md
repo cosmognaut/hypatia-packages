@@ -2,7 +2,7 @@
 
 Downstream custom packages and surgical hardware/workflow patches for Arch Linux on `hypatia`.
 
-Maintained by `nooroid`.
+Maintained by (@nooroid)[https://github.com/nooroid].
 
 ---
 
