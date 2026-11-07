@@ -12,6 +12,7 @@ Maintained by [@nooroid](https://github.com/nooroid).
 | :--- | :--- | :--- | :--- |
 | **`vicinae`** | [vicinaehq/vicinae](https://github.com/vicinaehq/vicinae) | `0.29.2` | Native `"show_status_bar": false` toggle, independent popover anchor for Ctrl+B actions menu, fixed clipboard copy bug for deeplinks/calculator, and custom per-command icon/emoji overrides in `settings.json`. |
 | **`ytm-player`** | [peternaame-boop/ytm-player](https://github.com/peternaame-boop/ytm-player) | `2.1.0` | YouTube CDN `available_at` activation delay fix (stops 403 Forbidden / "stream failed twice"), Ghostty/Kitty shift-key normalizer, native Ataraxia green palette, and `python-dbus-fast` hard dependency. |
+| **`tldraw-offline`** | [tldraw/tldraw-offline](https://github.com/tldraw/tldraw-offline) | `1.23.1` | Native PP Neue Montreal sans and IBM Plex Mono typography, plus FigJam-style multi-directional free resizing for sticky notes. |
 
 ---
 

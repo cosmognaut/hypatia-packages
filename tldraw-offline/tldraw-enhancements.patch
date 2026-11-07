@@ -1,0 +1,181 @@
+--- a/chunk-WESP7CPQ.js
++++ b/chunk-WESP7CPQ.js
+@@ -703,9 +703,9 @@
+ });
+ var DefaultFontFamilies = {
+   draw: "'tldraw_draw', sans-serif",
+-  sans: "'tldraw_sans', sans-serif",
++  sans: "'PP Neue Montreal', sans-serif",
+   serif: "'tldraw_serif', serif",
+-  mono: "'tldraw_mono', monospace"
++  mono: "'IBM Plex Mono', 'tldraw_mono', monospace"
+ };
+ function isFontEntry(value) {
+   return typeof value === "object" && value !== null && "fontFamily" in value;
+@@ -3670,6 +3670,7 @@
+   align: DefaultHorizontalAlignStyle,
+   verticalAlign: DefaultVerticalAlignStyle,
+   growY: validation_exports.positiveNumber,
++  growX: validation_exports.positiveNumber.optional(),
+   url: validation_exports.linkUrl,
+   richText: richTextValidator,
+   scale: validation_exports.nonZeroNumber,
+--- a/chunk-3W5KUHKC.js
++++ b/chunk-3W5KUHKC.js
+@@ -51860,21 +51860,10 @@
+     return true;
+   }
+   hideResizeHandles(shape) {
+-    const { resizeMode } = this.options;
+-    switch (resizeMode) {
+-      case "none": {
+-        return true;
+-      }
+-      case "scale": {
+-        return false;
+-      }
+-      default: {
+-        throw exhaustiveSwitchError(resizeMode);
+-      }
+-    }
++    return false;
+   }
+   isAspectRatioLocked(shape) {
+-    return this.options.resizeMode === "scale";
++    return false;
+   }
+   hideSelectionBoundsFg(shape) {
+     return false;
+@@ -51889,6 +51878,7 @@
+       verticalAlign: "middle",
+       labelColor: "black",
+       growY: 0,
++      growX: 0,
+       fontSizeAdjustment: 1,
+       url: "",
+       scale: 1,
+@@ -51901,7 +51891,7 @@
+     const dv = getDisplayValues(this, shape);
+     const lh = labelHeight * scale;
+     const lw = labelWidth * scale;
+-    const nw = dv.noteWidth * scale;
++    const nw = (dv.noteWidth + (shape.props.growX || 0)) * scale;
+     const nh = getNoteHeight(shape, dv.noteHeight);
+     return new Group2d({
+       children: [
+@@ -51926,7 +51916,7 @@
+     if (zoom * scale < 0.25) return [];
+     const dv = getDisplayValues(this, shape);
+     const nh = getNoteHeight(shape, dv.noteHeight);
+-    const nw = dv.noteWidth * scale;
++    const nw = (dv.noteWidth + (shape.props.growX || 0)) * scale;
+     const offset4 = CLONE_HANDLE_MARGIN / zoom * scale;
+     if (zoom * scale < 0.5) {
+       return [
+@@ -51971,18 +51961,29 @@
+     ];
+   }
+   onResize(shape, info) {
+-    const { resizeMode } = this.options;
+-    switch (resizeMode) {
+-      case "none": {
+-        return void 0;
+-      }
+-      case "scale": {
+-        return resizeScaled(shape, info);
+-      }
+-      default: {
+-        throw exhaustiveSwitchError(resizeMode);
+-      }
++    const { newPoint, handle, scaleX, scaleY, initialShape } = info;
++    const baseW = 200;
++    const baseH = 200;
++    const initW = baseW + (initialShape.props.growX || 0);
++    const initH = baseH + (initialShape.props.growY || 0);
++    const w = Math.max(baseW, Math.round(initW * Math.abs(scaleX)));
++    const h = Math.max(baseH, Math.round(initH * Math.abs(scaleY)));
++    const offset = new Vec(0, 0);
++    if (initW * scaleX < baseW && (handle === "top_left" || handle === "left" || handle === "bottom_left")) {
++      offset.x = (initW * scaleX) - baseW;
+     }
++    if (initH * scaleY < baseH && (handle === "top_left" || handle === "top" || handle === "top_right")) {
++      offset.y = (initH * scaleY) - baseH;
++    }
++    const { x, y } = offset.rot(shape.rotation).add(newPoint);
++    return {
++      x,
++      y,
++      props: {
++        growX: Math.max(0, w - baseW),
++        growY: Math.max(0, h - baseH)
++      }
++    };
+   }
+   getText(shape) {
+     return renderPlaintextFromRichText(this.editor, shape.props.richText);
+@@ -52014,7 +52015,7 @@
+     );
+     const colorMode = useColorMode();
+     const dv = getDisplayValues(this, shape, colorMode);
+-    const nw = dv.noteWidth * scale;
++    const nw = (dv.noteWidth + (shape.props.growX || 0)) * scale;
+     const nh = getNoteHeight(shape, dv.noteHeight);
+     const hideShadows = useEfficientZoomThreshold(0.25 / scale);
+     const isSelected = shape.id === this.editor.getOnlySelectedShapeId();
+@@ -52074,12 +52075,12 @@
+                 hasCustomTabBehavior: true,
+                 showTextOutline: false,
+                 onKeyDown: handleKeyDown2,
+-                style: scale !== 1 ? {
+-                  transform: `scale(${scale})`,
++                style: {
++                  transform: scale !== 1 ? `scale(${scale})` : void 0,
+                   transformOrigin: "top left",
+-                  width: dv.noteWidth,
++                  width: dv.noteWidth + (shape.props.growX || 0),
+                   height: dv.noteHeight + shape.props.growY
+-                } : void 0
++                }
+               }
+             )
+           ]
+@@ -52092,12 +52093,12 @@
+     const { scale } = shape.props;
+     const dv = getDisplayValues(this, shape);
+     const path = new Path2D();
+-    path.rect(0, 0, dv.noteWidth * scale, getNoteHeight(shape, dv.noteHeight));
++    path.rect(0, 0, (dv.noteWidth + (shape.props.growX || 0)) * scale, getNoteHeight(shape, dv.noteHeight));
+     return path;
+   }
+   toSvg(shape, ctx) {
+     const dv = getDisplayValues(this, shape, ctx.colorMode);
+-    const bounds = new Box(0, 0, dv.noteWidth, dv.noteHeight + shape.props.growY);
++    const bounds = new Box(0, 0, dv.noteWidth + (shape.props.growX || 0), dv.noteHeight + shape.props.growY);
+     const filterId = `note-shadow-${shape.id.replace(/:/g, "_")}`;
+     ctx.addExportDef({
+       key: filterId,
+@@ -52126,13 +52127,13 @@
+         "rect",
+         {
+           rx: 1,
+-          width: dv.noteWidth,
++          width: dv.noteWidth + (shape.props.growX || 0),
+           height: bounds.h,
+           fill: dv.noteBackgroundColor,
+           filter: `url(#${filterId})`
+         }
+       ),
+-      /* @__PURE__ */ (0, import_jsx_runtime163.jsx)("rect", { rx: 1, width: dv.noteWidth, height: bounds.h, fill: dv.noteBackgroundColor }),
++      /* @__PURE__ */ (0, import_jsx_runtime163.jsx)("rect", { rx: 1, width: dv.noteWidth + (shape.props.growX || 0), height: bounds.h, fill: dv.noteBackgroundColor }),
+       /* @__PURE__ */ (0, import_jsx_runtime163.jsx)(
+         RichTextSVG,
+         {
+@@ -52258,7 +52259,7 @@
+         lineHeight: dv.labelLineHeight,
+         fontFamily: dv.labelFontFamily,
+         fontSize: fontSizeAdjustment,
+-        maxWidth: dv.noteWidth - dv.labelPadding * 2 - FUZZ,
++        maxWidth: (dv.noteWidth + (shape.props.growX || 0)) - dv.labelPadding * 2 - FUZZ,
+         disableOverflowWrapBreaking: true,
+         measureScrollWidth: true
+       });
