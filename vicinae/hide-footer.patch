@@ -1,7 +1,14 @@
-diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
---- a/src/server/src/config/config.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/config/config.hpp	2026-11-07 15:09:16.438418675 +0530
-@@ -149,6 +149,7 @@
+--- a/src/server/src/config/config.hpp
++++ b/src/server/src/config/config.hpp
+@@ -20,6 +20,7 @@
+   std::optional<std::string> alias;
+   std::optional<bool> enabled;
+   std::optional<std::string> shortcut;
++  std::optional<std::string> icon;
+   std::optional<glz::generic::object_t> preferences;
+ };
+ 
+@@ -149,6 +150,7 @@
    BlurConfig blur;
    WindowCompactMode compactMode;
    bool floatingStatusBar = true;
@@ -9,7 +16,7 @@ diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
    LayerShellConfig layerShell;
    ClockConfig clock;
  
-@@ -212,6 +213,7 @@
+@@ -212,6 +214,7 @@
    std::optional<Partial<BlurConfig>> blur;
    std::optional<Partial<WindowCompactMode>> compactMode;
    std::optional<bool> floatingStatusBar;
@@ -17,9 +24,8 @@ diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
    std::optional<Partial<LayerShellConfig>> layerShell;
    std::optional<std::string> material;
    std::optional<ClockConfig> clock;
-diff -Naur a/src/server/src/ui/bridges/config-bridge.hpp b/src/server/src/ui/bridges/config-bridge.hpp
---- a/src/server/src/ui/bridges/config-bridge.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/bridges/config-bridge.hpp	2026-11-07 15:09:16.438651341 +0530
+--- a/src/server/src/ui/bridges/config-bridge.hpp
++++ b/src/server/src/ui/bridges/config-bridge.hpp
 @@ -36,6 +36,7 @@
    Q_PROPERTY(bool activateOnSingleClick READ activateOnSingleClick NOTIFY changed)
    Q_PROPERTY(bool blurEnabled READ blurEnabled NOTIFY changed)
@@ -36,9 +42,8 @@ diff -Naur a/src/server/src/ui/bridges/config-bridge.hpp b/src/server/src/ui/bri
  
    Q_INVOKABLE static QColor withAlpha(const QColor &c, qreal alpha) {
      return QColor::fromRgbF(c.redF(), c.greenF(), c.blueF(), alpha);
-diff -Naur a/src/server/src/ui/qml/launcher/LauncherWindow.qml b/src/server/src/ui/qml/launcher/LauncherWindow.qml
---- a/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-11-07 15:14:20.510568511 +0530
+--- a/src/server/src/ui/qml/launcher/LauncherWindow.qml
++++ b/src/server/src/ui/qml/launcher/LauncherWindow.qml
 @@ -193,12 +193,23 @@
  
          Loader {
@@ -83,9 +88,8 @@ diff -Naur a/src/server/src/ui/qml/launcher/LauncherWindow.qml b/src/server/src/
              controller: Launcher.footerPanel
              alignLeft: true
              maxHeight: Math.round(root.height * 0.55)
-diff -Naur a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml
---- a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-11-07 15:09:16.438946465 +0530
+--- a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml
++++ b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml
 @@ -143,6 +143,16 @@
              }
  
@@ -103,9 +107,8 @@ diff -Naur a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml b/src/ser
                  visible: Platform.supports("layerShell")
                  label: qsTr("Use layer shell")
                  description: qsTr("Anchor the launcher as a Wayland layer surface (wlr-layer-shell) instead of a regular window. May require reopening Vicinae to fully apply.")
-diff -Naur a/src/server/src/ui/settings/general-settings-model.cpp b/src/server/src/ui/settings/general-settings-model.cpp
---- a/src/server/src/ui/settings/general-settings-model.cpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/settings/general-settings-model.cpp	2026-11-07 15:09:16.439156760 +0530
+--- a/src/server/src/ui/settings/general-settings-model.cpp
++++ b/src/server/src/ui/settings/general-settings-model.cpp
 @@ -151,6 +151,12 @@
        {.launcherWindow = config::Partial<config::WindowConfig>{.floatingStatusBar = v}});
  }
@@ -119,9 +122,8 @@ diff -Naur a/src/server/src/ui/settings/general-settings-model.cpp b/src/server/
  bool GeneralSettingsModel::inputServerEnabled() const { return cfg().inputServer.enabled; }
  
  void GeneralSettingsModel::setInputServerEnabled(bool v) {
-diff -Naur a/src/server/src/ui/settings/general-settings-model.hpp b/src/server/src/ui/settings/general-settings-model.hpp
---- a/src/server/src/ui/settings/general-settings-model.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/settings/general-settings-model.hpp	2026-11-07 15:09:16.439439029 +0530
+--- a/src/server/src/ui/settings/general-settings-model.hpp
++++ b/src/server/src/ui/settings/general-settings-model.hpp
 @@ -34,6 +34,7 @@
    Q_PROPERTY(QString csdShadowSize READ csdShadowSize WRITE setCsdShadowSize NOTIFY configChanged)
    Q_PROPERTY(bool compactMode READ compactMode WRITE setCompactMode NOTIFY configChanged)
@@ -139,9 +141,8 @@ diff -Naur a/src/server/src/ui/settings/general-settings-model.hpp b/src/server/
    QString windowOpacity() const;
    void setWindowOpacity(const QString &v);
    bool nativeTextRendering() const;
-diff -Naur a/src/server/src/services/clipboard/clipboard-service.hpp b/src/server/src/services/clipboard/clipboard-service.hpp
---- a/src/server/src/services/clipboard/clipboard-service.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/services/clipboard/clipboard-service.hpp	2026-11-07 15:56:04.856960130 +0530
+--- a/src/server/src/services/clipboard/clipboard-service.hpp
++++ b/src/server/src/services/clipboard/clipboard-service.hpp
 @@ -89,7 +89,7 @@
    static constexpr int CLIPBOARD_RESTORE_DELAY_MS = 800;
    static constexpr std::chrono::milliseconds EXPORT_SYNC_DEBOUNCE{500};
@@ -151,3 +152,165 @@ diff -Naur a/src/server/src/services/clipboard/clipboard-service.hpp b/src/serve
    void scheduleClipboardRestore(int delayMs = CLIPBOARD_RESTORE_DELAY_MS);
    bool copyHtml(const Clipboard::Html &data, const Clipboard::CopyOptions &options = {.concealed = false});
    bool copyFile(const std::filesystem::path &path,
+--- a/src/server/src/services/root-item-manager/root-item-manager.hpp
++++ b/src/server/src/services/root-item-manager/root-item-manager.hpp
+@@ -209,6 +209,7 @@
+   std::optional<std::uint64_t> lastVisitedAt;
+   std::optional<std::string> alias;
+   std::optional<std::string> shortcut;
++  std::optional<std::string> icon;
+   std::string providerId;
+   std::shared_ptr<RootItem> item;
+ };
+@@ -330,6 +331,7 @@
+   void loadProvider(std::unique_ptr<RootProvider> provider);
+ 
+   RootProvider *provider(std::string_view id) const;
++  ImageURL itemIcon(const RootItem &item) const;
+   std::vector<SearchableRootItem> allItems() const { return m_items; }
+   std::vector<std::shared_ptr<RootItem>> fallbackItems() const;
+ 
+--- a/src/server/src/services/root-item-manager/root-item-manager.cpp
++++ b/src/server/src/services/root-item-manager/root-item-manager.cpp
+@@ -11,6 +11,7 @@
+ #include "fuzzy/fuzzy-searchable.hpp"
+ #include "fuzzy/fzf.hpp"
+ #include "config/config.hpp"
++#include "extension/model/image-model.hpp"
+ #include "services/local-storage/local-storage-service.hpp"
+ #include "utils.hpp"
+ #include "vicinae.hpp"
+@@ -669,6 +670,7 @@
+       if (auto enabled = itemConfig->enabled) { meta.enabled = enabled.value(); }
+       if (auto alias = itemConfig->alias) { meta.alias = alias.value(); }
+       if (auto shortcut = itemConfig->shortcut) { meta.shortcut = shortcut.value(); }
++      if (auto icon = itemConfig->icon) { meta.icon = icon.value(); }
+     }
+ 
+     if (providerConfig) {
+@@ -679,6 +681,16 @@
+   }
+ }
+ 
++ImageURL RootItemManager::itemIcon(const RootItem &item) const {
++  auto it = m_metadata.find(item.uniqueId());
++  if (it != m_metadata.end() && it->second.icon) {
++    const auto &custom = *it->second.icon;
++    if (custom.empty() || custom == "none") return ImageURL{};
++    return ImageURL(ImageLikeModel(ExtensionImageModel{.source = QString::fromStdString(custom)}));
++  }
++  return item.iconUrl();
++}
++
+ bool RootItemManager::samePreferences(const PreferenceValues &a, const PreferenceValues &b) {
+   if (a.size() != b.size()) return false;
+ 
+--- a/src/server/src/builtins/root/root-search-sources.cpp
++++ b/src/server/src/builtins/root/root-search-sources.cpp
+@@ -281,7 +281,7 @@
+ 
+ std::optional<ImageURL> RootFavoritesSection::itemIcon(int i) const {
+   if (std::cmp_greater_equal(i, m_items.size()) || !m_items[i]) return {};
+-  return m_items[i]->iconUrl();
++  return m_manager->itemIcon(*m_items[i]);
+ }
+ 
+ QVariant RootFavoritesSection::customData(int i, int role) const {
+@@ -345,7 +345,7 @@
+ 
+ std::optional<ImageURL> RootResultsSection::itemIcon(int i) const {
+   if (std::cmp_greater_equal(i, m_items.size()) || !m_items[i].item) return {};
+-  return m_items[i].item->iconUrl();
++  return m_manager->itemIcon(*m_items[i].item);
+ }
+ 
+ QVariant RootResultsSection::customData(int i, int role) const {
+@@ -452,7 +452,7 @@
+ 
+ std::optional<ImageURL> RootFallbackSection::itemIcon(int i) const {
+   if (std::cmp_greater_equal(i, m_items.size()) || !m_items[i]) return {};
+-  return m_items[i]->iconUrl();
++  return m_manager->itemIcon(*m_items[i]);
+ }
+ 
+ QVariant RootFallbackSection::customData(int i, int role) const {
+--- a/src/server/src/builtins/root/provider-search-model.cpp
++++ b/src/server/src/builtins/root/provider-search-model.cpp
+@@ -12,7 +12,10 @@
+ 
+ QString ProviderSearchSection::itemSubtitle(int i) const { return itemAt(i)->subtitle(); }
+ 
+-std::optional<ImageURL> ProviderSearchSection::itemIcon(int i) const { return itemAt(i)->iconUrl(); }
++std::optional<ImageURL> ProviderSearchSection::itemIcon(int i) const {
++  auto *item = itemAt(i);
++  return scope().services()->rootItemManager()->itemIcon(*item);
++}
+ 
+ std::unique_ptr<ActionPanelState> ProviderSearchSection::actionPanel(int i) const {
+   auto *item = itemAt(i);
+--- a/src/server/src/builtins/root/alias-form-view-host.cpp
++++ b/src/server/src/builtins/root/alias-form-view-host.cpp
+@@ -25,7 +25,7 @@
+   emit formChanged();
+ 
+   setNavigationTitle(tr("Set alias - %1").arg(meta.item->title()));
+-  setNavigationIcon(meta.item->iconUrl());
++  setNavigationIcon(manager->itemIcon(*meta.item));
+ 
+   auto panel = std::make_unique<FormActionPanelState>();
+   auto section = panel->createSection();
+--- a/src/server/src/builtins/vicinae/manage-fallback-model.cpp
++++ b/src/server/src/builtins/vicinae/manage-fallback-model.cpp
+@@ -18,7 +18,7 @@
+ QString EnabledFallbackSection::displaySubtitle(const RootItemPtr &item) const { return item->subtitle(); }
+ 
+ std::optional<ImageURL> EnabledFallbackSection::displayIcon(const RootItemPtr &item) const {
+-  return item->iconUrl();
++  return scope().services()->rootItemManager()->itemIcon(*item);
+ }
+ 
+ std::unique_ptr<ActionPanelState> EnabledFallbackSection::buildActionPanel(const RootItemPtr &item) const {
+@@ -40,7 +40,7 @@
+ QString AvailableFallbackSection::displaySubtitle(const RootItemPtr &item) const { return item->subtitle(); }
+ 
+ std::optional<ImageURL> AvailableFallbackSection::displayIcon(const RootItemPtr &item) const {
+-  return item->iconUrl();
++  return scope().services()->rootItemManager()->itemIcon(*item);
+ }
+ 
+ std::unique_ptr<ActionPanelState> AvailableFallbackSection::buildActionPanel(const RootItemPtr &item) const {
+--- a/src/server/src/ui/views/base-view.hpp
++++ b/src/server/src/ui/views/base-view.hpp
+@@ -38,7 +38,7 @@
+ 
+   virtual QString initialSearchPlaceholderText() const { return QString(); }
+   virtual QString initialNavigationTitle() const { return command()->info().name(); }
+-  virtual ImageURL initialNavigationIcon() const { return command()->info().iconUrl(); }
++  virtual ImageURL initialNavigationIcon() const;
+ 
+   virtual void initialize();
+   void activate();
+--- a/src/server/src/ui/views/base-view.cpp
++++ b/src/server/src/ui/views/base-view.cpp
+@@ -1,4 +1,5 @@
+ #include "ui/views/base-view.hpp"
++#include "services/root-item-manager/root-item-manager.hpp"
+ #include "command/command-types.hpp"
+ #include "navigation-controller.hpp"
+ #include "ui/action-panel/action-list-view.hpp"
+@@ -56,6 +57,15 @@
+   if (m_ctx) { m_ctx->navigation->notifyActionPanelChanged(m_navProxy); }
+ }
+ 
++ImageURL BaseView::initialNavigationIcon() const {
++  if (m_ctx && m_ctx->services && m_ctx->services->rootItemManager()) {
++    if (auto item = m_ctx->services->rootItemManager()->findItemById(command()->info().uniqueId())) {
++      return m_ctx->services->rootItemManager()->itemIcon(*item);
++    }
++  }
++  return command()->info().iconUrl();
++}
++
+ ActionPanelView *BaseView::actionPanelRoot() const { return m_rootPanel; }
+ 
+ bool BaseView::supportsSearch() const { return true; }

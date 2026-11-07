@@ -10,7 +10,7 @@ Maintained by [@nooroid](https://github.com/nooroid).
 
 | Package | Upstream | Version | Key Enhancements |
 | :--- | :--- | :--- | :--- |
-| **`vicinae`** | [vicinaehq/vicinae](https://github.com/vicinaehq/vicinae) | `0.29.2` | Native `"show_status_bar": false` setting, footer/bottom bar removal, popover reparenting, Ataraxia theme integration. |
+| **`vicinae`** | [vicinaehq/vicinae](https://github.com/vicinaehq/vicinae) | `0.29.2` | Native `"show_status_bar": false` toggle, independent popover anchor for Ctrl+B actions menu, fixed clipboard copy bug for deeplinks/calculator, and custom per-command icon/emoji overrides in `settings.json`. |
 | **`ytm-player`** | [peternaame-boop/ytm-player](https://github.com/peternaame-boop/ytm-player) | `2.1.0` | YouTube CDN `available_at` activation delay fix (stops 403 Forbidden / "stream failed twice"), Ghostty/Kitty shift-key normalizer, native Ataraxia green palette, and `python-dbus-fast` hard dependency. |
 
 ---
