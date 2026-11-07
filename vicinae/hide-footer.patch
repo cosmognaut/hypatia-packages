@@ -292,13 +292,14 @@
    void activate();
 --- a/src/server/src/ui/views/base-view.cpp
 +++ b/src/server/src/ui/views/base-view.cpp
-@@ -1,4 +1,5 @@
+@@ -1,4 +1,6 @@
  #include "ui/views/base-view.hpp"
++#include "service-registry.hpp"
 +#include "services/root-item-manager/root-item-manager.hpp"
  #include "command/command-types.hpp"
  #include "navigation-controller.hpp"
  #include "ui/action-panel/action-list-view.hpp"
-@@ -56,6 +57,15 @@
+@@ -56,6 +58,15 @@
    if (m_ctx) { m_ctx->navigation->notifyActionPanelChanged(m_navProxy); }
  }
  
