@@ -14,9 +14,10 @@ A deep-search session resume extension for [Pi](https://github.com/earendil-work
   - Persists session metadata to `~/.cache/vicinae/pi-sessions-cache.json`.
   - Evaluates file `mtime` so only newly modified or created sessions are parsed on launch.
 - **Tmux & Ghostty Integration**:
-  - **Enter**: Immediately closes Vicinae and spawns a new Ghostty window running tmux session `'pi'`:
-    - If session `'pi'` is already active, injects a new window inside it running `pi --session '<path>'` and attaches Ghostty.
-    - If session `'pi'` is not active, spawns Ghostty running `tmux new-session -s pi -c '<cwd>' 'pi --session <path>'`.
+  - **Enter**: Immediately closes Vicinae:
+    - If session `'pi'` is already running and attached to a terminal, appends a new window (`tmux new-window -a -t pi:`) running `pi --session '<path>'` and instructs Niri to focus your active Ghostty window.
+    - If session `'pi'` is running but detached, appends the window and spawns Ghostty attached to `'pi'`.
+    - If session `'pi'` is not active, spawns Ghostty creating `tmux new-session -s pi -c '<cwd>' 'pi --session <path>'`.
 - **Action Panel Utilities (`control+L` / `control+B`)**:
   - Copy Resume Command (`pi --session ...`)
   - Copy Session File Path

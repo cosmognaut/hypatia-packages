@@ -29,7 +29,7 @@ Maintained by [@nooroid](https://github.com/nooroid).
 Each package directory contains a standalone `PKGBUILD` and its patch. To build and install any package on Arch Linux:
 
 ```bash
-cd vicinae      # or cd ytm-player
+cd vicinae      # or cd ytm-player or cd tldraw-offline
 makepkg -si
 ```
 
@@ -45,7 +45,7 @@ To prevent automatic `yay -Syu` or `pacman -Syu` upgrades from replacing your cu
 ```ini
 # /etc/pacman.conf
 [options]
-IgnorePkg = vicinae ytm-player
+IgnorePkg = vicinae ytm-player tldraw-offline-bin
 ```
 
 Now `yay` will print a warning and preserve your custom builds until you decide to upgrade them manually.
