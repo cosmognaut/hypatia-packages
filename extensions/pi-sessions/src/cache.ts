@@ -33,3 +33,15 @@ export function saveCache(sessionsMap: Record<string, SessionEntry>): void {
     console.error("Failed to save pi sessions cache:", err);
   }
 }
+
+export function removeFromCache(filePath: string): void {
+  try {
+    const current = loadCache();
+    if (current[filePath]) {
+      delete current[filePath];
+      saveCache(current);
+    }
+  } catch (err) {
+    console.error("Failed to remove from cache:", err);
+  }
+}

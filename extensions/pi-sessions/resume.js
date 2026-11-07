@@ -34,6 +34,7 @@ __export(resume_exports, {
 });
 module.exports = __toCommonJS(resume_exports);
 var import_api = require("@vicinae/api");
+var import_node_fs3 = __toESM(require("node:fs"));
 var import_react = require("react");
 
 // src/scanner.ts
@@ -72,6 +73,17 @@ function saveCache(sessionsMap) {
     import_node_fs.default.writeFileSync(CACHE_FILE, JSON.stringify(data), "utf-8");
   } catch (err) {
     console.error("Failed to save pi sessions cache:", err);
+  }
+}
+function removeFromCache(filePath) {
+  try {
+    const current = loadCache();
+    if (current[filePath]) {
+      delete current[filePath];
+      saveCache(current);
+    }
+  } catch (err) {
+    console.error("Failed to remove from cache:", err);
   }
 }
 
@@ -296,6 +308,37 @@ function ResumeCommand() {
     (0, import_api.closeMainWindow)();
     launchPiSession(session);
   }, []);
+  const handleDelete = (0, import_react.useCallback)(async (session) => {
+    const sessionLabel = session.name || session.firstPrompt?.slice(0, 40) || session.id.slice(0, 8);
+    const confirmed = await (0, import_api.confirmAlert)({
+      title: "Delete Pi Session?",
+      message: `Permanently delete "${sessionLabel}"? This removes the session file from disk.`,
+      primaryAction: {
+        title: "Delete",
+        style: import_api.Alert.ActionStyle.Destructive
+      }
+    });
+    if (!confirmed) return;
+    try {
+      if (import_node_fs3.default.existsSync(session.filePath)) {
+        import_node_fs3.default.unlinkSync(session.filePath);
+      }
+      removeFromCache(session.filePath);
+      setSessions((prev) => prev.filter((s) => s.filePath !== session.filePath));
+      await (0, import_api.showToast)({
+        style: import_api.Toast.Style.Success,
+        title: "Session deleted",
+        message: sessionLabel
+      });
+    } catch (err) {
+      console.error("Failed to delete session file:", err);
+      await (0, import_api.showToast)({
+        style: import_api.Toast.Style.Failure,
+        title: "Failed to delete session",
+        message: err.message || String(err)
+      });
+    }
+  }, []);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
     import_api.List,
     {
@@ -358,15 +401,27 @@ function ResumeCommand() {
                   content: session.cwd
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_api.ActionPanel.Section, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                import_api.Action,
-                {
-                  title: "Refresh Sessions",
-                  icon: import_api.Icon.ArrowClockwise,
-                  shortcut: { modifiers: ["cmd"], key: "r" },
-                  onAction: () => loadData(true)
-                }
-              ) })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_api.ActionPanel.Section, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  import_api.Action,
+                  {
+                    title: "Delete Session",
+                    icon: import_api.Icon.Trash,
+                    style: "destructive",
+                    shortcut: { modifiers: ["ctrl"], key: "x" },
+                    onAction: () => handleDelete(session)
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  import_api.Action,
+                  {
+                    title: "Refresh Sessions",
+                    icon: import_api.Icon.ArrowClockwise,
+                    shortcut: { modifiers: ["cmd"], key: "r" },
+                    onAction: () => loadData(true)
+                  }
+                )
+              ] })
             ] })
           },
           session.filePath

@@ -1,8 +1,21 @@
-import { List, ActionPanel, Action, Icon, Color, closeMainWindow } from "@vicinae/api";
+import {
+  List,
+  ActionPanel,
+  Action,
+  Icon,
+  Color,
+  closeMainWindow,
+  confirmAlert,
+  Alert,
+  showToast,
+  Toast,
+} from "@vicinae/api";
+import fs from "node:fs";
 import React, { useState, useEffect, useCallback } from "react";
 import { getSessions } from "./scanner";
 import { launchPiSession } from "./launcher";
 import { formatTimeAgo } from "./utils";
+import { removeFromCache } from "./cache";
 import { SessionEntry } from "./types";
 
 export default function ResumeCommand() {
@@ -28,6 +41,44 @@ export default function ResumeCommand() {
   const handleSelect = useCallback((session: SessionEntry) => {
     closeMainWindow();
     launchPiSession(session);
+  }, []);
+
+  const handleDelete = useCallback(async (session: SessionEntry) => {
+    const sessionLabel =
+      session.name ||
+      session.firstPrompt?.slice(0, 40) ||
+      session.id.slice(0, 8);
+
+    const confirmed = await confirmAlert({
+      title: "Delete Pi Session?",
+      message: `Permanently delete "${sessionLabel}"? This removes the session file from disk.`,
+      primaryAction: {
+        title: "Delete",
+        style: Alert.ActionStyle.Destructive,
+      },
+    });
+
+    if (!confirmed) return;
+
+    try {
+      if (fs.existsSync(session.filePath)) {
+        fs.unlinkSync(session.filePath);
+      }
+      removeFromCache(session.filePath);
+      setSessions((prev) => prev.filter((s) => s.filePath !== session.filePath));
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Session deleted",
+        message: sessionLabel,
+      });
+    } catch (err: any) {
+      console.error("Failed to delete session file:", err);
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Failed to delete session",
+        message: err.message || String(err),
+      });
+    }
   }, []);
 
   return (
@@ -87,6 +138,13 @@ export default function ResumeCommand() {
                   content={session.cwd}
                 />
                 <ActionPanel.Section>
+                  <Action
+                    title="Delete Session"
+                    icon={Icon.Trash}
+                    style="destructive"
+                    shortcut={{ modifiers: ["ctrl"], key: "x" }}
+                    onAction={() => handleDelete(session)}
+                  />
                   <Action
                     title="Refresh Sessions"
                     icon={Icon.ArrowClockwise}
