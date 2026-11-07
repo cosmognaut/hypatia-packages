@@ -58,7 +58,7 @@
      const offset4 = CLONE_HANDLE_MARGIN / zoom * scale;
      if (zoom * scale < 0.5) {
        return [
-@@ -51971,18 +51962,33 @@
+@@ -51971,18 +51962,37 @@
      ];
    }
    onResize(shape, info) {
@@ -77,10 +77,13 @@
 +    const baseW = 200;
 +    const baseH = 200;
 +    const initGrowX = (initialShape.meta && typeof initialShape.meta.growX === "number") ? initialShape.meta.growX : 0;
++    const initGrowY = (initialShape.meta && typeof initialShape.meta.growY === "number") ? initialShape.meta.growY : (initialShape.props.growY || 0);
 +    const initW = baseW + initGrowX;
-+    const initH = baseH + (initialShape.props.growY || 0);
-+    const w = Math.max(baseW, Math.round(initW * Math.abs(scaleX)));
-+    const h = Math.max(baseH, Math.round(initH * Math.abs(scaleY)));
++    const initH = baseH + initGrowY;
++    const targetW = Math.max(baseW, Math.round(initW * Math.abs(scaleX)));
++    const targetH = Math.max(baseH, Math.round(initH * Math.abs(scaleY)));
++    const newGrowX = Math.max(0, targetW - baseW);
++    const newGrowY = Math.max(0, targetH - baseH);
 +    const offset = new Vec(0, 0);
 +    if (initW * scaleX < baseW && (handle === "top_left" || handle === "left" || handle === "bottom_left")) {
 +      offset.x = (initW * scaleX) - baseW;
@@ -94,16 +97,17 @@
 +      y,
 +      meta: {
 +        ...shape.meta,
-+        growX: Math.max(0, w - baseW)
++        growX: newGrowX,
++        growY: newGrowY
 +      },
 +      props: {
-+        growY: Math.max(0, h - baseH)
++        growY: newGrowY
 +      }
 +    };
    }
    getText(shape) {
      return renderPlaintextFromRichText(this.editor, shape.props.richText);
-@@ -52014,7 +52020,8 @@
+@@ -52014,7 +52024,8 @@
      );
      const colorMode = useColorMode();
      const dv = getDisplayValues(this, shape, colorMode);
@@ -113,24 +117,31 @@
      const nh = getNoteHeight(shape, dv.noteHeight);
      const hideShadows = useEfficientZoomThreshold(0.25 / scale);
      const isSelected = shape.id === this.editor.getOnlySelectedShapeId();
-@@ -52074,12 +52081,12 @@
+@@ -52074,12 +52085,18 @@
                  hasCustomTabBehavior: true,
                  showTextOutline: false,
                  onKeyDown: handleKeyDown2,
 -                style: scale !== 1 ? {
 -                  transform: `scale(${scale})`,
 +                style: {
++                  boxSizing: "border-box",
 +                  transform: scale !== 1 ? `scale(${scale})` : void 0,
                    transformOrigin: "top left",
 -                  width: dv.noteWidth,
-+                  width: dv.noteWidth + growX,
-                   height: dv.noteHeight + shape.props.growY
+-                  height: dv.noteHeight + shape.props.growY
 -                } : void 0
++                  width: dv.noteWidth + growX,
++                  height: dv.noteHeight + shape.props.growY,
++                  display: "flex",
++                  flexDirection: "column",
++                  justifyContent: dv.labelVerticalAlign === "start" ? "flex-start" : dv.labelVerticalAlign === "end" ? "flex-end" : "center",
++                  alignItems: dv.labelHorizontalAlign === "start" ? "flex-start" : dv.labelHorizontalAlign === "end" ? "flex-end" : "center",
++                  textAlign: dv.labelHorizontalAlign === "start" ? "left" : dv.labelHorizontalAlign === "end" ? "right" : "center"
 +                }
                }
              )
            ]
-@@ -52091,13 +52098,16 @@
+@@ -52091,13 +52108,16 @@
    getIndicatorPath(shape) {
      const { scale } = shape.props;
      const dv = getDisplayValues(this, shape);
@@ -149,7 +160,7 @@
      const filterId = `note-shadow-${shape.id.replace(/:/g, "_")}`;
      ctx.addExportDef({
        key: filterId,
-@@ -52126,13 +52136,13 @@
+@@ -52126,13 +52146,13 @@
          "rect",
          {
            rx: 1,
@@ -165,7 +176,17 @@
        /* @__PURE__ */ (0, import_jsx_runtime163.jsx)(
          RichTextSVG,
          {
-@@ -52253,12 +52263,13 @@
+@@ -52214,7 +52234,8 @@
+   getNoteSizeAdjustments(shape) {
+     const dv = getDisplayValues(this, shape);
+     const { labelHeight, fontSizeAdjustment } = this.getLabelSize(shape);
+-    const growY = Math.max(0, labelHeight - dv.noteHeight);
++    const manualGrowY = (shape.meta && typeof shape.meta.growY === "number") ? shape.meta.growY : 0;
++    const growY = Math.max(manualGrowY, Math.max(0, labelHeight - dv.noteHeight));
+     if (growY !== shape.props.growY || fontSizeAdjustment !== shape.props.fontSizeAdjustment) {
+       return {
+         ...shape,
+@@ -52253,12 +52274,13 @@
      do {
        fontSizeAdjustment = Math.min(unadjustedFontSize, unadjustedFontSize - iterations);
        const html = renderHtmlFromRichTextForMeasurement(this.editor, richText);
