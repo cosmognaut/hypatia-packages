@@ -197,21 +197,40 @@ async function getSessions(forceRefresh = false) {
 
 // src/launcher.ts
 var import_node_child_process = require("node:child_process");
+var import_node_path3 = __toESM(require("node:path"));
 function launchPiSession(session) {
+  const windowName = session.name || import_node_path3.default.basename(session.cwd) || "pi";
   (0, import_node_child_process.execFile)("tmux", ["has-session", "-t", "pi"], (err) => {
     if (!err) {
       (0, import_node_child_process.execFile)(
         "tmux",
-        ["new-window", "-t", "pi", "-c", session.cwd, `pi --session "${session.filePath}"`],
+        [
+          "new-window",
+          "-a",
+          "-t",
+          "pi:",
+          "-c",
+          session.cwd,
+          "-n",
+          windowName,
+          `pi --session "${session.filePath}"`
+        ],
         (winErr) => {
           if (winErr) {
             console.error("Failed to create tmux window:", winErr);
           }
-          const ghostty = (0, import_node_child_process.spawn)("ghostty", ["-e", "tmux", "attach-session", "-t", "pi"], {
-            detached: true,
-            stdio: "ignore"
+          (0, import_node_child_process.execFile)("tmux", ["list-clients", "-t", "pi"], (clientErr, stdout) => {
+            if (!clientErr && stdout.trim().length > 0) {
+              (0, import_node_child_process.execFile)("niri", ["msg", "action", "focus-window", "--app-id", "com.mitchellh.ghostty"], () => {
+              });
+            } else {
+              const ghostty = (0, import_node_child_process.spawn)("ghostty", ["-e", "tmux", "attach-session", "-t", "pi"], {
+                detached: true,
+                stdio: "ignore"
+              });
+              ghostty.unref();
+            }
           });
-          ghostty.unref();
         }
       );
     } else {
@@ -225,6 +244,8 @@ function launchPiSession(session) {
           "pi",
           "-c",
           session.cwd,
+          "-n",
+          windowName,
           `pi --session "${session.filePath}"`
         ],
         {
