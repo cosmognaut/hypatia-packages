@@ -15,6 +15,14 @@ Maintained by [@nooroid](https://github.com/nooroid).
 
 ---
 
+## Vicinae Extensions
+
+| Extension | Path | Description |
+| :--- | :--- | :--- |
+| **`pi-sessions`** | `extensions/pi-sessions` | Deep-search session resume tool for Pi coding agent. Indexes compaction goals, prompts, and keywords from `~/.pi/agent/sessions/`, with instant launch into Ghostty + tmux. |
+
+---
+
 ## Installation & Building
 
 Each package directory contains a standalone `PKGBUILD` and its patch. To build and install any package on Arch Linux:

@@ -1,6 +1,9 @@
 # Arch packaging artifacts
-src/
-pkg/
+/vicinae/src/
+/vicinae/pkg/
+/ytm-player/src/
+/ytm-player/pkg/
+node_modules/
 *.pkg.tar.zst
 *.pkg.tar.xz
 *.pkg.tar.gz

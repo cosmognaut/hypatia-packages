@@ -1,0 +1,36 @@
+{
+  "$schema": "https://raw.githubusercontent.com/vicinaehq/vicinae/refs/heads/main/extra/schemas/extension.json",
+  "name": "pi-sessions",
+  "title": "Pi Sessions",
+  "description": "Fuzzy search and resume pi sessions inside tmux",
+  "categories": [
+    "Developer",
+    "Productivity"
+  ],
+  "author": "nooroid",
+  "license": "MIT",
+  "icon": "icon.png",
+  "version": "1.0.0",
+  "commands": [
+    {
+      "name": "resume",
+      "title": "Resume Pi Session",
+      "subtitle": "Pi",
+      "description": "Fuzzy search and resume pi sessions in tmux",
+      "mode": "view",
+      "icon": "icon.png"
+    }
+  ],
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@vicinae/api": "^0.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.0.0"
+  }
+}
