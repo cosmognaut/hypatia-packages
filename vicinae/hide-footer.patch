@@ -139,3 +139,15 @@ diff -Naur a/src/server/src/ui/settings/general-settings-model.hpp b/src/server/
    QString windowOpacity() const;
    void setWindowOpacity(const QString &v);
    bool nativeTextRendering() const;
+diff -Naur a/src/server/src/services/clipboard/clipboard-service.hpp b/src/server/src/services/clipboard/clipboard-service.hpp
+--- a/src/server/src/services/clipboard/clipboard-service.hpp	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/services/clipboard/clipboard-service.hpp	2026-11-07 15:56:04.856960130 +0530
+@@ -89,7 +89,7 @@
+   static constexpr int CLIPBOARD_RESTORE_DELAY_MS = 800;
+   static constexpr std::chrono::milliseconds EXPORT_SYNC_DEBOUNCE{500};
+ 
+-  bool copyText(const QString &text, const Clipboard::CopyOptions &options = {.concealed = true});
++  bool copyText(const QString &text, const Clipboard::CopyOptions &options = {.concealed = false});
+   void scheduleClipboardRestore(int delayMs = CLIPBOARD_RESTORE_DELAY_MS);
+   bool copyHtml(const Clipboard::Html &data, const Clipboard::CopyOptions &options = {.concealed = false});
+   bool copyFile(const std::filesystem::path &path,
