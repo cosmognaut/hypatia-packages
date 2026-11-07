@@ -1,0 +1,101 @@
+diff -Naur a/src/ytm_player/app/_app.py b/src/ytm_player/app/_app.py
+--- a/src/ytm_player/app/_app.py	2026-09-08 12:03:53.000000000 +0530
++++ b/src/ytm_player/app/_app.py	2026-11-07 14:29:27.065230119 +0530
+@@ -204,9 +204,10 @@
+         super().__init__()
+ 
+         # Register custom YTM theme and set the configured default.
+-        from ytm_player.ui.theme import YTM_DARK
++        from ytm_player.ui.theme import ATARAXIA, YTM_DARK
+ 
+         self.register_theme(YTM_DARK)
++        self.register_theme(ATARAXIA)
+ 
+         # Configuration.
+         self.settings: Settings = get_settings()
+diff -Naur a/src/ytm_player/app/_keys.py b/src/ytm_player/app/_keys.py
+--- a/src/ytm_player/app/_keys.py	2026-09-08 12:03:53.000000000 +0530
++++ b/src/ytm_player/app/_keys.py	2026-11-07 14:28:52.249980513 +0530
+@@ -111,19 +111,17 @@
+         # Textual uses names like "ctrl+x", "shift+tab", "alt+v".
+         if key.startswith("ctrl+"):
+             return f"C-{key[5:]}"
+-        if key.startswith("shift+"):
+-            return f"S-{key[6:]}"
+         if key.startswith("alt+"):
+             return f"M-{key[4:]}"
+ 
+-        # Textual names punctuation symbolically (">" arrives as
+-        # "greater_than_sign", "^" as "circumflex_accent") while the keymap
+-        # binds the literal character, so prefer the character itself.
+-        # Whitespace is excluded so "space" keeps its name.
++        # Prefer the literal character if printable (handles shift+letter in modern terminals).
+         char = event.character
+         if char is not None and len(char) == 1 and event.is_printable and not char.isspace():
+             return char
+ 
++        if key.startswith("shift+"):
++            return f"S-{key[6:]}"
++
+         # Map Textual's special key names to our keymap names.
+         key_map = {
+             "up": "up",
+diff -Naur a/src/ytm_player/services/stream.py b/src/ytm_player/services/stream.py
+--- a/src/ytm_player/services/stream.py	2026-09-08 12:03:53.000000000 +0530
++++ b/src/ytm_player/services/stream.py	2026-11-07 14:28:34.948995007 +0530
+@@ -400,6 +400,13 @@
+ 
+             expires_at = time.time() + _CACHE_TTL_SECONDS
+ 
++            # YouTube CDN stream token activation delay (avoids HTTP 403 Forbidden).
++            available_at = info.get("available_at")
++            if isinstance(available_at, (int, float)):
++                delay = available_at - time.time()
++                if delay > 0:
++                    time.sleep(delay + 0.3)
++
+             return StreamInfo(
+                 url=stream_url,
+                 video_id=video_id,
+diff -Naur a/src/ytm_player/ui/theme.py b/src/ytm_player/ui/theme.py
+--- a/src/ytm_player/ui/theme.py	2026-09-08 12:03:53.000000000 +0530
++++ b/src/ytm_player/ui/theme.py	2026-11-07 14:30:01.060353031 +0530
+@@ -83,6 +83,38 @@
+     },
+ )
+ 
++ATARAXIA = Theme(
++    name="ataraxia",
++    primary="#76e076",
++    secondary="#76706b",
++    accent="#f47c71",
++    success="#76e076",
++    warning="#f9bd6d",
++    error="#f47c71",
++    foreground="#dcd8d4",
++    background="#100f0f",
++    surface="#151414",
++    dark=True,
++    variables={
++        "scrollbar": "#76e076",
++        "scrollbar-hover": "#acecac",
++        "scrollbar-active": "#76e076",
++        "scrollbar-background": "#100f0f",
++        "scrollbar-background-hover": "#151414",
++        "scrollbar-background-active": "#151414",
++        "playback-bar-bg": "#151414",
++        "active-tab": "#76e076",
++        "inactive-tab": "#76706b",
++        "selected-item": "#201f1d",
++        "progress-filled": "#76e076",
++        "progress-empty": "#2b2927",
++        "lyrics-played": "#403d3a",
++        "lyrics-current": "#76e076",
++        "lyrics-upcoming": "#8c857d",
++        "link-color": "#6aadf0",
++    },
++)
++
+ 
+ @dataclass
+ class ThemeColors:

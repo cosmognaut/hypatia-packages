@@ -1,0 +1,113 @@
+diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
+--- a/src/server/src/config/config.hpp	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/config/config.hpp	2026-11-06 20:50:19.678944686 +0530
+@@ -149,6 +149,7 @@
+   BlurConfig blur;
+   WindowCompactMode compactMode;
+   bool floatingStatusBar = true;
++  bool showStatusBar = true;
+   LayerShellConfig layerShell;
+   ClockConfig clock;
+ 
+@@ -212,6 +213,7 @@
+   std::optional<Partial<BlurConfig>> blur;
+   std::optional<Partial<WindowCompactMode>> compactMode;
+   std::optional<bool> floatingStatusBar;
++  std::optional<bool> showStatusBar;
+   std::optional<Partial<LayerShellConfig>> layerShell;
+   std::optional<std::string> material;
+   std::optional<ClockConfig> clock;
+diff -Naur a/src/server/src/ui/bridges/config-bridge.hpp b/src/server/src/ui/bridges/config-bridge.hpp
+--- a/src/server/src/ui/bridges/config-bridge.hpp	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/ui/bridges/config-bridge.hpp	2026-11-06 20:50:24.289000421 +0530
+@@ -36,6 +36,7 @@
+   Q_PROPERTY(bool activateOnSingleClick READ activateOnSingleClick NOTIFY changed)
+   Q_PROPERTY(bool blurEnabled READ blurEnabled NOTIFY changed)
+   Q_PROPERTY(bool floatingStatusBar READ floatingStatusBar NOTIFY changed)
++  Q_PROPERTY(bool showStatusBar READ showStatusBar NOTIFY changed)
+   Q_PROPERTY(QString windowMaterial READ windowMaterial NOTIFY changed)
+   Q_PROPERTY(QString popupMaterial READ popupMaterial NOTIFY changed)
+ 
+@@ -122,6 +123,7 @@
+                                                    platform::supports(platform::Capability::WindowMaterial)));
+   }
+   bool floatingStatusBar() const { return cfg().launcherWindow.floatingStatusBar; }
++  bool showStatusBar() const { return cfg().launcherWindow.showStatusBar; }
+ 
+   Q_INVOKABLE static QColor withAlpha(const QColor &c, qreal alpha) {
+     return QColor::fromRgbF(c.redF(), c.greenF(), c.blueF(), alpha);
+diff -Naur a/src/server/src/ui/qml/launcher/LauncherWindow.qml b/src/server/src/ui/qml/launcher/LauncherWindow.qml
+--- a/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-11-06 20:50:50.372648781 +0530
+@@ -193,12 +193,12 @@
+ 
+         Loader {
+             id: floatingStatusBar
+-            visible: !Launcher.compacted && !Launcher.hasOverlay && Launcher.statusBarVisible
++            visible: Config.showStatusBar && !Launcher.compacted && !Launcher.hasOverlay && Launcher.statusBarVisible
+             anchors.left: parent.left
+             anchors.right: parent.right
+             anchors.bottom: parent.bottom
+-            height: (item as Item)?.implicitHeight ?? 0
+-            sourceComponent: root.statusBarComponent
++            height: Config.showStatusBar ? ((item as Item)?.implicitHeight ?? 0) : 0
++            sourceComponent: Config.showStatusBar ? root.statusBarComponent : null
+         }
+ 
+         SourceBlendRect {
+diff -Naur a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml
+--- a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-11-06 20:50:43.719235141 +0530
+@@ -143,6 +143,16 @@
+             }
+ 
+             SettingsRow {
++                visible: Style.configurableStatusBar
++                label: qsTr("Show status bar")
++                description: qsTr("Show or hide the bottom status bar and actions footer in the launcher.")
++                SettingsToggle {
++                    checked: root.model.showStatusBar
++                    onToggled: checked => root.model.showStatusBar = checked
++                }
++            }
++
++            SettingsRow {
+                 visible: Platform.supports("layerShell")
+                 label: qsTr("Use layer shell")
+                 description: qsTr("Anchor the launcher as a Wayland layer surface (wlr-layer-shell) instead of a regular window. May require reopening Vicinae to fully apply.")
+diff -Naur a/src/server/src/ui/settings/general-settings-model.cpp b/src/server/src/ui/settings/general-settings-model.cpp
+--- a/src/server/src/ui/settings/general-settings-model.cpp	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/ui/settings/general-settings-model.cpp	2026-11-06 20:50:36.715817240 +0530
+@@ -151,6 +151,12 @@
+       {.launcherWindow = config::Partial<config::WindowConfig>{.floatingStatusBar = v}});
+ }
+ 
++bool GeneralSettingsModel::showStatusBar() const { return cfg().launcherWindow.showStatusBar; }
++void GeneralSettingsModel::setShowStatusBar(bool v) {
++  cfgManager().mergeWithUser(
++      {.launcherWindow = config::Partial<config::WindowConfig>{.showStatusBar = v}});
++}
++
+ bool GeneralSettingsModel::inputServerEnabled() const { return cfg().inputServer.enabled; }
+ 
+ void GeneralSettingsModel::setInputServerEnabled(bool v) {
+diff -Naur a/src/server/src/ui/settings/general-settings-model.hpp b/src/server/src/ui/settings/general-settings-model.hpp
+--- a/src/server/src/ui/settings/general-settings-model.hpp	2026-10-20 04:21:48.000000000 +0530
++++ b/src/server/src/ui/settings/general-settings-model.hpp	2026-11-06 20:50:30.625743669 +0530
+@@ -34,6 +34,7 @@
+   Q_PROPERTY(QString csdShadowSize READ csdShadowSize WRITE setCsdShadowSize NOTIFY configChanged)
+   Q_PROPERTY(bool compactMode READ compactMode WRITE setCompactMode NOTIFY configChanged)
+   Q_PROPERTY(bool floatingStatusBar READ floatingStatusBar WRITE setFloatingStatusBar NOTIFY configChanged)
++  Q_PROPERTY(bool showStatusBar READ showStatusBar WRITE setShowStatusBar NOTIFY configChanged)
+   Q_PROPERTY(QString windowOpacity READ windowOpacity WRITE setWindowOpacity NOTIFY configChanged)
+   Q_PROPERTY(
+       bool nativeTextRendering READ nativeTextRendering WRITE setNativeTextRendering NOTIFY configChanged)
+@@ -94,6 +95,8 @@
+   void setCompactMode(bool v);
+   bool floatingStatusBar() const;
+   void setFloatingStatusBar(bool v);
++  bool showStatusBar() const;
++  void setShowStatusBar(bool v);
+   QString windowOpacity() const;
+   void setWindowOpacity(const QString &v);
+   bool nativeTextRendering() const;

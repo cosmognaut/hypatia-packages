@@ -1,0 +1,15 @@
+# Arch packaging artifacts
+src/
+pkg/
+*.pkg.tar.zst
+*.pkg.tar.xz
+*.pkg.tar.gz
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tgz
+*.log
+*.whl
+.SRCINFO
+.nvchecker.toml
+*-meta.yml
