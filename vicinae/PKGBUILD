@@ -45,7 +45,7 @@ source=(
 
 sha256sums=('8836ab5f046a6f6b40c510e689834dd94c348129e102d867e07692c29b1da1dd'
             '196fc6a6afea06fc94d6ca4ff45c422bdef02aa25b8f2a80579dce27e56a2ae1'
-            '8bf2d99db4b5d5b97da24ffca39d5edfb38f5eddcdba240ff8748bd1a1ee6923')
+            '9f4dd7cdede910fe6a6fce03773edaacaf823b4af0b0786c9398a5605501a98c')
 
 prepare() {
   curl "https://api.github.com/repos/vicinaehq/vicinae/git/ref/tags/v${pkgver}" \

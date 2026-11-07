@@ -1,6 +1,6 @@
 diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
 --- a/src/server/src/config/config.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/config/config.hpp	2026-11-06 20:50:19.678944686 +0530
++++ b/src/server/src/config/config.hpp	2026-11-07 15:09:16.438418675 +0530
 @@ -149,6 +149,7 @@
    BlurConfig blur;
    WindowCompactMode compactMode;
@@ -19,7 +19,7 @@ diff -Naur a/src/server/src/config/config.hpp b/src/server/src/config/config.hpp
    std::optional<ClockConfig> clock;
 diff -Naur a/src/server/src/ui/bridges/config-bridge.hpp b/src/server/src/ui/bridges/config-bridge.hpp
 --- a/src/server/src/ui/bridges/config-bridge.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/bridges/config-bridge.hpp	2026-11-06 20:50:24.289000421 +0530
++++ b/src/server/src/ui/bridges/config-bridge.hpp	2026-11-07 15:09:16.438651341 +0530
 @@ -36,6 +36,7 @@
    Q_PROPERTY(bool activateOnSingleClick READ activateOnSingleClick NOTIFY changed)
    Q_PROPERTY(bool blurEnabled READ blurEnabled NOTIFY changed)
@@ -38,8 +38,8 @@ diff -Naur a/src/server/src/ui/bridges/config-bridge.hpp b/src/server/src/ui/bri
      return QColor::fromRgbF(c.redF(), c.greenF(), c.blueF(), alpha);
 diff -Naur a/src/server/src/ui/qml/launcher/LauncherWindow.qml b/src/server/src/ui/qml/launcher/LauncherWindow.qml
 --- a/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-11-06 20:50:50.372648781 +0530
-@@ -193,12 +193,12 @@
++++ b/src/server/src/ui/qml/launcher/LauncherWindow.qml	2026-11-07 15:14:20.510568511 +0530
+@@ -193,12 +193,23 @@
  
          Loader {
              id: floatingStatusBar
@@ -52,12 +52,40 @@ diff -Naur a/src/server/src/ui/qml/launcher/LauncherWindow.qml b/src/server/src/
 -            sourceComponent: root.statusBarComponent
 +            height: Config.showStatusBar ? ((item as Item)?.implicitHeight ?? 0) : 0
 +            sourceComponent: Config.showStatusBar ? root.statusBarComponent : null
++        }
++
++        Item {
++            id: popoverAnchor
++            anchors.left: parent.left
++            anchors.right: parent.right
++            anchors.bottom: parent.bottom
++            anchors.leftMargin: root.appearance.contentInset
++            anchors.rightMargin: root.appearance.contentInset
++            anchors.bottomMargin: root.appearance.contentInset
++            height: 0
          }
  
          SourceBlendRect {
+@@ -223,14 +234,14 @@
+ 
+         ActionPanelPopover {
+             id: actionPanelPopover
+-            parent: (floatingStatusBar.item as LauncherStatusBar)?.popupAnchor ?? floatingStatusBar
++            parent: (floatingStatusBar.item as LauncherStatusBar)?.popupAnchor ?? popoverAnchor
+             controller: Launcher.actionPanel
+             maxHeight: Math.round(root.height * 0.55)
+         }
+ 
+         ActionPanelPopover {
+             id: footerMenuPopover
+-            parent: (floatingStatusBar.item as LauncherStatusBar)?.popupAnchor ?? floatingStatusBar
++            parent: (floatingStatusBar.item as LauncherStatusBar)?.popupAnchor ?? popoverAnchor
+             controller: Launcher.footerPanel
+             alignLeft: true
+             maxHeight: Math.round(root.height * 0.55)
 diff -Naur a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml
 --- a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-11-06 20:50:43.719235141 +0530
++++ b/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml	2026-11-07 15:09:16.438946465 +0530
 @@ -143,6 +143,16 @@
              }
  
@@ -77,7 +105,7 @@ diff -Naur a/src/server/src/ui/qml/settings/AppearanceSettingsPage.qml b/src/ser
                  description: qsTr("Anchor the launcher as a Wayland layer surface (wlr-layer-shell) instead of a regular window. May require reopening Vicinae to fully apply.")
 diff -Naur a/src/server/src/ui/settings/general-settings-model.cpp b/src/server/src/ui/settings/general-settings-model.cpp
 --- a/src/server/src/ui/settings/general-settings-model.cpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/settings/general-settings-model.cpp	2026-11-06 20:50:36.715817240 +0530
++++ b/src/server/src/ui/settings/general-settings-model.cpp	2026-11-07 15:09:16.439156760 +0530
 @@ -151,6 +151,12 @@
        {.launcherWindow = config::Partial<config::WindowConfig>{.floatingStatusBar = v}});
  }
@@ -93,7 +121,7 @@ diff -Naur a/src/server/src/ui/settings/general-settings-model.cpp b/src/server/
  void GeneralSettingsModel::setInputServerEnabled(bool v) {
 diff -Naur a/src/server/src/ui/settings/general-settings-model.hpp b/src/server/src/ui/settings/general-settings-model.hpp
 --- a/src/server/src/ui/settings/general-settings-model.hpp	2026-10-20 04:21:48.000000000 +0530
-+++ b/src/server/src/ui/settings/general-settings-model.hpp	2026-11-06 20:50:30.625743669 +0530
++++ b/src/server/src/ui/settings/general-settings-model.hpp	2026-11-07 15:09:16.439439029 +0530
 @@ -34,6 +34,7 @@
    Q_PROPERTY(QString csdShadowSize READ csdShadowSize WRITE setCsdShadowSize NOTIFY configChanged)
    Q_PROPERTY(bool compactMode READ compactMode WRITE setCompactMode NOTIFY configChanged)
